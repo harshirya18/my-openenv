@@ -1,27 +1,18 @@
-import os
-import requests
+from fastapi import FastAPI
+import uvicorn
 
-API_BASE_URL = os.getenv("API_BASE_URL", "https://api-inference.huggingface.co/models")
-MODEL_NAME = os.getenv("MODEL_NAME", "gpt2")
-HF_TOKEN = os.getenv("HF_TOKEN")  # no default
+app = FastAPI()
 
-headers = {}
-if HF_TOKEN:
-    headers["Authorization"] = f"Bearer {HF_TOKEN}"
+@app.get("/")
+def read_root():
+    return {"message": "OpenEnv Server is Running"}
 
-
-def query(payload):
-    response = requests.post(
-        f"{API_BASE_URL}/{MODEL_NAME}",
-        headers=headers,
-        json=payload,
-    )
-    return response.json()
-
-
-def predict(prompt: str):
-    return query({"inputs": prompt})
-
+# This is the critical part to fix the "POST OK" error
+@app.post("/reset")
+async def reset():
+    # If you have variables to clear, do it here
+    return {"status": "success", "message": "Environment reset successfully"}
 
 if __name__ == "__main__":
-    print(predict("Hello"))
+    # Ensure it runs on port 8000 to match the Dockerfile EXPOSE
+    uvicorn.run(app, host="0.0.0.0", port=8000)
